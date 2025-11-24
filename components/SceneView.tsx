@@ -60,7 +60,7 @@ export const SceneView: React.FC<SceneViewProps> = ({
   const zoomedModelRef = useRef<ModelMesh | null>(null);
   const hoveredModelRef = useRef<ModelMesh | null>(null); // Track currently hovered model
   const previousCamPosRef = useRef<THREE.Vector3>(new THREE.Vector3());
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number>(0);
   
   // Glow Effect Refs
   const glowSpriteRef = useRef<THREE.Sprite | null>(null);
@@ -75,6 +75,9 @@ export const SceneView: React.FC<SceneViewProps> = ({
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const isMouseDownRef = useRef(false);
+
+  // Touch Interaction Refs
+  const touchStartRef = useRef({ x: 0, y: 0 });
 
   // Scroll/Grid refs
   const scrollOffsetRef = useRef(0);
@@ -353,6 +356,72 @@ export const SceneView: React.FC<SceneViewProps> = ({
         isDraggingRef.current = false;
     };
 
+    const handleTouchStart = (e: TouchEvent) => {
+        if (e.touches.length === 1) {
+            isMouseDownRef.current = true; // Use mouse down flag for consistency in some logic checks
+            isDraggingRef.current = false;
+            touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+            // Update mouse position for potential raycasting (tap)
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                mouseRef.current.x = ((e.touches[0].clientX - rect.left) / rect.width) * 2 - 1;
+                mouseRef.current.y = -((e.touches[0].clientY - rect.top) / rect.height) * 2 + 1;
+            }
+        }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+        if (e.touches.length !== 1) return;
+        
+        // Prevent default scrolling to handle it manually
+        if (e.cancelable) e.preventDefault();
+
+        const clientX = e.touches[0].clientX;
+        const clientY = e.touches[0].clientY;
+
+        const deltaX = clientX - touchStartRef.current.x;
+        const deltaY = clientY - touchStartRef.current.y;
+
+        // Threshold to detect drag vs tap
+        if (!isDraggingRef.current && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
+            isDraggingRef.current = true;
+        }
+
+        if (isZoomedRef.current && zoomedModelRef.current) {
+             // ORBIT Logic for Touch
+             const sensitivity = 0.005;
+             orbitRef.current.theta -= deltaX * sensitivity;
+             orbitRef.current.phi -= deltaY * sensitivity;
+             orbitRef.current.phi = Math.max(0.1, Math.min(Math.PI - 0.1, orbitRef.current.phi));
+        } else {
+             // SCROLL Logic for Touch
+             // Moving finger UP (negative deltaY) -> Scroll Down (Increase Offset)
+             const scrollSensitivity = 2.0; 
+             const deltaScroll = -deltaY * scrollSensitivity;
+             
+             const cols = gridColsRef.current;
+             const totalRows = Math.ceil(files.length / cols);
+             const contentHeight = totalRows * SPACING;
+             const maxScroll = Math.max(0, contentHeight - gridYOffsetRef.current);
+             
+             scrollOffsetRef.current += deltaScroll;
+             scrollOffsetRef.current = Math.max(0, Math.min(scrollOffsetRef.current, maxScroll));
+        }
+        
+        touchStartRef.current = { x: clientX, y: clientY };
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+        isMouseDownRef.current = false;
+        
+        if (!isDraggingRef.current) {
+            // TAP Detected
+            handleSingleClick();
+        }
+        isDraggingRef.current = false;
+    };
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (isZoomedRef.current) return;
@@ -387,6 +456,11 @@ export const SceneView: React.FC<SceneViewProps> = ({
     containerRef.current.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
     containerRef.current.addEventListener('wheel', handleWheel, { passive: false });
+    
+    // Touch Events for Mobile
+    containerRef.current.addEventListener('touchstart', handleTouchStart, { passive: false });
+    containerRef.current.addEventListener('touchmove', handleTouchMove, { passive: false });
+    containerRef.current.addEventListener('touchend', handleTouchEnd);
 
     // --- LOGIC FUNCTIONS ---
     
@@ -644,6 +718,11 @@ export const SceneView: React.FC<SceneViewProps> = ({
       containerRef.current?.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
       containerRef.current?.removeEventListener('wheel', handleWheel);
+      
+      containerRef.current?.removeEventListener('touchstart', handleTouchStart);
+      containerRef.current?.removeEventListener('touchmove', handleTouchMove);
+      containerRef.current?.removeEventListener('touchend', handleTouchEnd);
+      
       cancelAnimationFrame(animationFrameRef.current!);
       rendererRef.current?.dispose();
       if (containerRef.current && rendererRef.current) {
