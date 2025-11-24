@@ -2,12 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0f172a" />
-    <meta name="description" content="Interactive 3D previewer for OpenSCAD models hosted on GitHub." />
-    <title>StlVerse | OpenSCAD Previewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StlVerse</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
@@ -25,7 +23,7 @@
       }
     </script>
     <style>
-      body { margin: 0; overflow: hidden; background-color: #050505; color: white; -webkit-font-smoothing: antialiased; }
+      body { margin: 0; overflow: hidden; background-color: #050505; color: white; }
       /* Hide scrollbar for clean UI */
       ::-webkit-scrollbar {
         width: 6px;
@@ -46,7 +44,6 @@
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "three": "https://aistudiocdn.com/three@^0.181.2",
     "three/": "https://aistudiocdn.com/three@^0.181.2/",
-    "three/examples/jsm/loaders/STLLoader": "https://aistudiocdn.com/three@^0.181.2/examples/jsm/loaders/STLLoader.js",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
   }
 }
@@ -54,6 +51,5 @@
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
