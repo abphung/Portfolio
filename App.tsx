@@ -124,7 +124,7 @@ export default function App() {
       {/* UI: Header z-30 (Above Gradients) */}
       <div className={`absolute top-0 left-0 p-8 z-30 transition-opacity duration-500 ${selectedModel ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <h1 className="text-4xl font-black text-white tracking-tighter mb-2 drop-shadow-md">
-          STL<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-100 to-orange-100">VERSE</span>
+          ANDREW<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-100 to-orange-100">PHUNG</span>
         </h1>
         <div className="flex items-center gap-2 text-white/80 text-sm font-mono drop-shadow">
             <Github size={16} />

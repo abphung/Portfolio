@@ -19,7 +19,7 @@ export class GitHubService {
   }
 
   async fetchAllFiles(path = ''): Promise<GitHubFile[]> {
-    const cacheKey = `stlverse-${this.owner}-${this.repo}-${path}`;
+    const cacheKey = `andrewphung-${this.owner}-${this.repo}-${path}`;
     const cached = localStorage.getItem(cacheKey);
     
     // Simple 1-hour cache invalidation

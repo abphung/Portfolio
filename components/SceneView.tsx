@@ -48,7 +48,8 @@ export const SceneView: React.FC<SceneViewProps> = ({
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
+  // Initializing with a vector to satisfy potential strict type requirements
+  const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3()));
   const mouseRef = useRef<THREE.Vector2>(new THREE.Vector2());
   
   const loadedModelsRef = useRef<ModelMesh[]>([]);
@@ -156,7 +157,8 @@ export const SceneView: React.FC<SceneViewProps> = ({
     
     // Disable Shadows and ToneMapping for flat, exact color rendering
     renderer.shadowMap.enabled = false;
-    renderer.outputEncoding = THREE.sRGBEncoding;
+    // Updated for Three.js r152+ where outputEncoding is replaced by outputColorSpace
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NoToneMapping; // Important for exact hex color match
     
     containerRef.current.appendChild(renderer.domElement);
@@ -241,7 +243,8 @@ export const SceneView: React.FC<SceneViewProps> = ({
             metalness: 0.0, // Remove metalness to avoid grey darkening
           });
 
-          const mesh = new THREE.Mesh(geometry, material) as ModelMesh;
+          // Cast to unknown first to avoid type overlap error with incompatible userData
+          const mesh = new THREE.Mesh(geometry, material) as unknown as ModelMesh;
           mesh.userData.fileName = file.name;
           mesh.userData.scadContent = file.scadContent;
           mesh.userData.index = index; 

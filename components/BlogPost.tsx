@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ModelMesh } from '../types';
-import { X, Code, Box, Share2, GripHorizontal, GripVertical } from 'lucide-react';
+import { X, Code, Box, GripHorizontal, GripVertical } from 'lucide-react';
 
 interface BlogPostProps {
   model: ModelMesh | null;
@@ -145,14 +145,6 @@ export const BlogPost: React.FC<BlogPostProps> = ({ model, visible, onClose, wid
             <span className="block text-sm">No source code available for this binary STL.</span>
           </div>
         )}
-      </div>
-
-      {/* Footer */}
-      <div className="p-6 border-t border-white/10 bg-black/40 shrink-0">
-        <button className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2">
-            <Share2 size={16} />
-            <span>Share Model</span>
-        </button>
       </div>
     </div>
   );
