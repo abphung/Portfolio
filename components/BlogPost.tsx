@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { ModelMesh } from '../types';
 import { X, Code, Box, GripHorizontal, GripVertical } from 'lucide-react';
@@ -46,13 +47,40 @@ export const BlogPost: React.FC<BlogPostProps> = ({ model, visible, onClose, wid
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
+    
+    // Explicit Touch Handling for resizing via window
+    const handleTouchMove = (e: TouchEvent) => {
+        if (!isDraggingRef.current) return;
+        
+        // Prevent default scrolling of document while resizing
+        if (e.cancelable) e.preventDefault();
+        
+        if (window.innerWidth > 768) {
+             const newWidth = window.innerWidth - e.touches[0].clientX;
+             const clampedWidth = Math.max(300, Math.min(newWidth, window.innerWidth * 0.6));
+             onResize(clampedWidth);
+        } else {
+             const newHeight = window.innerHeight - e.touches[0].clientY;
+             const clampedHeight = Math.max(200, Math.min(newHeight, window.innerHeight * 0.9));
+             onResize(clampedHeight);
+        }
+    };
+    
+    const handleTouchEnd = () => {
+        isDraggingRef.current = false;
+        document.body.style.userSelect = '';
+    };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [onResize]);
 
@@ -60,6 +88,11 @@ export const BlogPost: React.FC<BlogPostProps> = ({ model, visible, onClose, wid
     isDraggingRef.current = true;
     document.body.style.userSelect = 'none'; // Prevent text selection
     document.body.style.cursor = window.innerWidth > 768 ? 'ew-resize' : 'ns-resize';
+  };
+  
+  const startResizeTouch = (e: React.TouchEvent) => {
+      isDraggingRef.current = true;
+      document.body.style.userSelect = 'none';
   };
 
   if (!model) return null;
@@ -88,16 +121,17 @@ export const BlogPost: React.FC<BlogPostProps> = ({ model, visible, onClose, wid
       {/* Resizer Handle */}
       <div 
         onMouseDown={startResize}
+        onTouchStart={startResizeTouch}
         className={`absolute z-50 flex items-center justify-center
           ${isMobile 
-            ? 'top-0 left-0 w-full h-6 cursor-ns-resize -mt-3' // Mobile: Horizontal strip at top
-            : 'top-0 left-0 w-1 h-full cursor-ew-resize -ml-0.5' // Desktop: Vertical strip at left
+            ? 'top-0 left-0 w-full h-8 cursor-ns-resize -mt-4' // Mobile: Horizontal strip at top
+            : 'top-0 left-0 w-4 h-full cursor-ew-resize -ml-2' // Desktop: Vertical strip at left
           }
         `}
       >
         {/* Visual Grip Indicator */}
         {isMobile && (
-            <div className="w-12 h-1 bg-white/20 rounded-full mt-8 pointer-events-none" />
+            <div className="w-12 h-1 bg-white/20 rounded-full mt-4 pointer-events-none" />
         )}
       </div>
 
